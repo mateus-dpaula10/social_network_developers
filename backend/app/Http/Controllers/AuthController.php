@@ -59,4 +59,13 @@ class AuthController extends Controller
             return response()->json(['error' => 'Erro ao realizar logout!'], 500);
         }
     }
+
+    public function currentUser() {
+        try {
+            $user = JWTAuth::parseToken()->authenticate();
+            return response()->json($user);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Não foi possível recuperar o usuário!'], 401);
+        }
+    }
 }
