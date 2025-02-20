@@ -38,4 +38,45 @@ class PostController extends Controller
         $posts = Post::with('user')->latest()->get();
         return response()->json($posts);
     }
+
+    public function update(Request $request, $postId) {
+        $user = JWTAuth::parseToken()->authenticate();
+        $post = Post::find($postId);
+
+        if (!$post) {
+            return response()->json(['error' => 'Post não encontrado!'], 404);
+        }
+
+        if ($post->user_id !== $user->id) {
+            return response()->json(['error' => 'Você não tem permissão para excluir este post!'], 403);
+        }
+
+        $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string|max:5000'
+        ]);
+
+        $post->title = $request->title;
+        $post->content = $request->content;
+        $post->save();
+
+        return response()->json($post);
+    }
+
+    public function destroy($postId) {
+        $user = JWTAuth::parseToken()->authenticate();
+        $post = Post::find($postId);
+
+        if (!$post) {
+            return response()->json(['error' => 'Post não encontrado!'], 404);
+        }
+
+        if ($post->user_id !== $user->id) {
+            return response()->json(['error' => 'Você não tem permissão para excluir este post!'], 403);
+        }
+
+        $post->delete();
+
+        return response()->json(['message' => 'Post excluído com sucesso!']);
+    }
 }

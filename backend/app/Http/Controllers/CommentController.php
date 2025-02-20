@@ -40,6 +40,23 @@ class CommentController extends Controller
         ], 201);
     }
 
+    public function destroy($commentId) {
+        $user = JWTAuth::parseToken()->authenticate();
+        $comment = Comment::find($commentId);
+
+        if (!$comment) {
+            return response()->json(['error' => 'Comentário não encontrado!'], 404);
+        }
+
+        if ($comment->user_id !== $user->id) {
+            return response()->json(['error' => 'Você não tem permissão para excluir este comentário!'], 403);
+        }
+
+        $comment->delete();
+
+        return response()->json(['message' => 'Comentário excluído com sucesso!']);
+    }
+
     public function getComments($postId) {
         $comments = Comment::where('post_id', $postId)->with('user')->latest()->get();
         return response()->json($comments);
